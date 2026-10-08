@@ -50,7 +50,7 @@ It's an estimate. It only knows about payments the app recorded. Also, credit-ca
 bit tells you, by push notification or SMS, when someone has **received** money you sent. Save My Money reads that message and counts the amount as spending, labelled "bit". It reads bit's own notifications and SMS whose sender is "bit", and ignores all other messages.
 
 - It's counted when the other person receives the money, which can be a little after you send it.
-- bit hasn't published what these messages say, so the app only counts a message that has an amount and clearly says you sent it. Money coming in, requests and failed transfers are never counted.
+- bit hasn't published what these messages say, so the app is strict. It only counts a message that clearly says someone **received** money you sent, with an amount. It never counts money coming in or back, requests, failed or pending transfers, offers, or messages with a link or phone number. Fake "bit" SMS usually have a link or phone number.
 - After your first bit transfer, tap the bell icon. It shows every bit message the app saw and whether it was counted. If it says "Not counted", send me the text (you can change the name and amount) and I'll teach the app that wording. In the meantime, add the transfer with **Add**.
 - Paying a business with bit may not send any message. Add those with **Add**.
 

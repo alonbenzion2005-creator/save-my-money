@@ -35,6 +35,7 @@ class WalletNotificationListener : NotificationListenerService() {
         val notification = sbn.notification ?: return
         if (notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
         if (fromWallet && !WalletApps.isPurchaseChannel(packageName, notification.channelId)) return
+        if (!fromWallet && !BitApp.isPossibleTransferChannel(notification.channelId)) return
 
         val extras = notification.extras
         val title = (extras.getCharSequence(Notification.EXTRA_TITLE_BIG)
@@ -61,20 +62,28 @@ class WalletNotificationListener : NotificationListenerService() {
             source = PaymentStore.SOURCE_BIT
         }
 
+        // An SMS app shows a whole conversation in one notification (one sbn.key for every SMS
+        // from "bit") and re-posts it as messages arrive, so tell bit messages apart, and date
+        // them, by the message's own time rather than the notification's.
+        val time = if (!fromWallet && notification.`when` > 0) notification.`when` else sbn.postTime
+        val key = if (fromWallet) sbn.key else sbn.key + "|" + notification.`when`
+
         val store = PaymentStore.get(this)
         val result = when {
             payment == null && fromWallet -> "Not counted: no amount in this notification"
-            payment == null -> "Not counted: not money you sent (or the wording wasn't recognised)"
-            store.addNotificationPayment(payment, sbn.postTime, packageName, sbn.key, source) ->
+            payment == null -> "Not counted: not recognised as money you sent. Add it by hand if it was."
+            store.addNotificationPayment(payment, time, packageName, key, source) ->
                 "Counted " + Money.format(payment.amountCents, payment.currency)
             else -> "Already counted"
         }
+        // bit's channel names aren't known yet; logging them lets a later version filter on them.
+        val channel = if (packageName == BitApp.PACKAGE) "\n[channel: ${notification.channelId}]" else ""
         store.logNotification(
-            timeMillis = sbn.postTime,
+            timeMillis = time,
             packageName = packageName,
-            notificationKey = sbn.key,
+            notificationKey = key,
             title = title,
-            body = texts.distinct().joinToString("\n").ifEmpty { null },
+            body = (texts.distinct().joinToString("\n") + channel).ifEmpty { null },
             result = result,
         )
     }

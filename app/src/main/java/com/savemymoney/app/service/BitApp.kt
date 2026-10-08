@@ -21,6 +21,12 @@ object BitApp {
         packageName == PACKAGE ||
             (packageName in SMS_APPS && title?.trim()?.lowercase(Locale.ROOT) in SMS_SENDERS)
 
+    /** False for bit's marketing channels (their real names aren't known, so this goes by the usual words). */
+    fun isPossibleTransferChannel(channelId: String?): Boolean {
+        val channel = channelId.orEmpty().lowercase(Locale.ROOT)
+        return listOf("promo", "marketing", "campaign", "offer").none { it in channel }
+    }
+
     /** Packages worth looking at before reading a notification's text. */
     fun mightBeBit(packageName: String): Boolean = packageName == PACKAGE || packageName in SMS_APPS
 }
