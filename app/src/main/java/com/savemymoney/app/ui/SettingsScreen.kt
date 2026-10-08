@@ -1,5 +1,6 @@
 package com.savemymoney.app.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,24 +20,50 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.savemymoney.app.data.Currencies
 import com.savemymoney.app.data.Money
 import com.savemymoney.app.data.Prefs
+import com.savemymoney.app.service.WalletWatcherService
+
+private val AUTO_CLOSE_CHOICES = listOf(
+    0 to "When I tap “Continue to Wallet”",
+    5 to "By itself after 5 seconds",
+    10 to "By itself after 10 seconds",
+)
+
+@Composable
+private fun Choice(label: String, selected: Boolean, onSelect: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, onClick = onSelect, role = Role.RadioButton)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(12.dp))
+        Text(label, style = MaterialTheme.typography.bodyLarge)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +72,8 @@ fun SettingsScreen(onBack: () -> Unit) {
     val prefs = remember { Prefs(context) }
     val automaticCurrency = remember { Currencies.automatic(context) }
     var bannerEnabled by remember { mutableStateOf(prefs.bannerEnabled) }
+    var fullScreen by remember { mutableStateOf(prefs.fullScreen) }
+    var autoClose by remember { mutableIntStateOf(prefs.autoCloseSeconds) }
     var currency by remember { mutableStateOf(prefs.currencyOverride ?: "") }
     var budget by remember { mutableStateOf(prefs.budgetCents.takeIf { it > 0 }?.let(Money::plain) ?: "") }
     val budgetCurrency = currency.takeIf { Currencies.isValid(it) } ?: automaticCurrency
@@ -69,7 +99,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Show banner when Google Wallet opens", style = MaterialTheme.typography.titleSmall)
+                    Text("Show my spending when Google Wallet opens", style = MaterialTheme.typography.titleSmall)
                     Text(
                         "Also needs the Accessibility switch from the setup steps.",
                         style = MaterialTheme.typography.bodySmall,
@@ -83,6 +113,38 @@ fun SettingsScreen(onBack: () -> Unit) {
                         prefs.bannerEnabled = it
                     },
                 )
+            }
+
+            if (bannerEnabled) {
+                Column {
+                    Text("How to show it", style = MaterialTheme.typography.titleSmall)
+                    Choice("Full screen, before Wallet", selected = fullScreen) {
+                        fullScreen = true
+                        prefs.fullScreen = true
+                    }
+                    Choice("Small banner at the top", selected = !fullScreen) {
+                        fullScreen = false
+                        prefs.fullScreen = false
+                    }
+                }
+                if (fullScreen) {
+                    Column {
+                        Text("Go on to Wallet", style = MaterialTheme.typography.titleSmall)
+                        for ((seconds, label) in AUTO_CLOSE_CHOICES) {
+                            Choice(label, selected = autoClose == seconds) {
+                                autoClose = seconds
+                                prefs.autoCloseSeconds = seconds
+                            }
+                        }
+                    }
+                }
+                TextButton(
+                    onClick = {
+                        if (!WalletWatcherService.preview()) {
+                            Toast.makeText(context, "Turn on the Accessibility switch first", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                ) { Text("Preview") }
             }
 
             OutlinedTextField(

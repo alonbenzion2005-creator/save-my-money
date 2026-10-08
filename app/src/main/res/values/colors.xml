@@ -6,4 +6,8 @@
     <color name="banner_track">#33FFFFFF</color>
     <color name="banner_ok">#FF7EE2A8</color>
     <color name="banner_over">#FFFF8A80</color>
+    <color name="screen_background">#FA0B2E1C</color>
+    <color name="screen_background_over">#FA3D1010</color>
+    <color name="screen_button_text">#FF0B2E1C</color>
+    <color name="screen_button_ripple">#330B2E1C</color>
 </resources>

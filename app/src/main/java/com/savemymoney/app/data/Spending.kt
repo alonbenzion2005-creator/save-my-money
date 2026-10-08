@@ -1,6 +1,7 @@
 package com.savemymoney.app.data
 
 import android.content.Context
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.TextStyle
@@ -16,6 +17,8 @@ data class MonthSpending(
     /** Totals in any other currencies, largest first. */
     val otherTotals: List<Pair<String, Long>>,
     val budgetCents: Long,
+    /** Spent today in the main currency (0 when this isn't the current month). */
+    val todayCents: Long,
 ) {
     val isCurrentMonth: Boolean get() = month == YearMonth.now()
 
@@ -25,6 +28,8 @@ data class MonthSpending(
         get() = otherTotals.joinToString(" · ") { (currency, cents) -> "+ " + Money.format(cents, currency) }
 
     val countLine: String get() = if (payments.size == 1) "1 payment" else "${payments.size} payments"
+
+    val todayLine: String get() = Money.format(todayCents, mainCurrency) + " today"
 
     val hasBudget: Boolean get() = budgetCents > 0
 
@@ -48,6 +53,8 @@ data class MonthSpending(
             val payments = PaymentStore.get(context).paymentsBetween(from, until)
             val main = Currencies.main(context)
             val totals = payments.groupBy { it.currency }.mapValues { (_, list) -> list.sumOf { it.amountCents } }
+            val startOfToday = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
+            val today = payments.filter { it.currency == main && it.timeMillis >= startOfToday }.sumOf { it.amountCents }
             return MonthSpending(
                 month = month,
                 payments = payments,
@@ -55,6 +62,7 @@ data class MonthSpending(
                 mainTotalCents = totals[main] ?: 0L,
                 otherTotals = totals.filterKeys { it != main }.toList().sortedByDescending { abs(it.second) },
                 budgetCents = Prefs(context).budgetCents,
+                todayCents = today,
             )
         }
     }

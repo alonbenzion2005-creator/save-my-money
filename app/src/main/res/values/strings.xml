@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">Save My Money</string>
     <string name="notification_listener_label">Save My Money – Wallet payments</string>
-    <string name="accessibility_label">Save My Money – Wallet banner</string>
+    <string name="accessibility_label">Save My Money – Wallet spending</string>
     <string name="accessibility_summary">Shows how much you’ve spent this month when you open Google Wallet.</string>
-    <string name="accessibility_description">When Google Wallet opens, Save My Money shows a banner at the top of the screen with what you’ve spent this month.\n\nIt only notices which app is in front. It doesn’t read what’s on your screen, and nothing leaves your phone.</string>
+    <string name="accessibility_description">When Google Wallet opens, Save My Money shows what you’ve spent this month, full screen or as a banner at the top.\n\nIt only notices which app is in front. It doesn’t read what’s on your screen, and nothing leaves your phone.</string>
     <string name="banner_label">Spent in %1$s</string>
+    <string name="screen_continue">Continue to Wallet</string>
+    <string name="screen_continue_countdown">Continue to Wallet (%1$d)</string>
 </resources>

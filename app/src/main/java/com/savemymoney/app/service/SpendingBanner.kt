@@ -27,25 +27,25 @@ import java.time.YearMonth
  * It's an accessibility overlay rather than a normal "draw over other apps" window:
  * payment apps can hide normal overlays, but not this kind, and it needs no extra permission.
  */
-class SpendingBanner(private val service: AccessibilityService) {
+class SpendingBanner(private val service: AccessibilityService) : SpendingDisplay {
 
     private val windowManager = service.getSystemService(WindowManager::class.java)
     private val handler = Handler(Looper.getMainLooper())
     private val hideLater = Runnable { hide() }
     private var view: View? = null
 
-    fun show() {
+    override fun show() {
         val v = view ?: createView().also { if (!attach(it)) return }
         bind(v)
         handler.removeCallbacks(hideLater)
         handler.postDelayed(hideLater, VISIBLE_MS)
     }
 
-    fun refresh() {
+    override fun refresh() {
         view?.let(::bind)
     }
 
-    fun hide(animate: Boolean = true) {
+    override fun hide(animate: Boolean) {
         handler.removeCallbacks(hideLater)
         val v = view ?: return
         view = null

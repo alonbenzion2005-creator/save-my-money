@@ -1,22 +1,32 @@
 # Save My Money
 
-An Android app that shows **how much you've spent this month** in a banner at the top of the screen whenever you open **Google Wallet**. It was built for a Pixel 7a and should work on any phone running Android 8 or newer.
+An Android app that shows **how much you've spent this month** full screen whenever you open **Google Wallet**, before you get to your cards. It was built for a Pixel 7a and should work on any phone running Android 8 or newer.
 
 ```
-┌──────────────────────────────────────────┐
-│ Spent in October                         │
-│ ₪1,234.50                                │
-│ ▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░                      │
-│ 23 payments · ₪765.50 left of ₪2,000.00  │
-└──────────────────────────────────────────┘
+┌────────────────────────────────┐
+│          SAVE MY MONEY         │
+│                                │
+│        Spent in October        │
+│          ₪1,234.50             │
+│  23 payments · ₪85.00 today    │
+│                                │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░   │
+│   ₪765.50 left of ₪2,000.00    │
+│                                │
+│  ┌──────────────────────────┐  │
+│  │  Continue to Wallet (10) │  │
+│  └──────────────────────────┘  │
+└────────────────────────────────┘
 ```
+
+The screen turns red when you're over budget. Tap **Continue to Wallet** or press back to go on to Wallet. You can also set it to close by itself after 5 or 10 seconds. If you prefer, Settings can switch it to a small banner at the top instead.
 
 ## How it works
 
 Google Wallet doesn't let other apps read your payment history. So the app works like this:
 
 1. **It reads Wallet's payment notifications.** After each tap-to-pay, Google Wallet shows a notification such as "Shufersal · ₪45.90 with Mastercard •••• 1234". The app saves the amount from it. English, Hebrew and other formats are all understood, including ₪, $, €, £, ש״ח, ILS and so on.
-2. **It notices when Wallet opens.** When Google Wallet comes to the front, a banner slides in with this month's total. If you set a budget, the banner also shows how much is left. The banner hides by itself after a few seconds, or you can tap it to close it.
+2. **It notices when Wallet opens.** When Google Wallet comes to the front, the app covers it with this month's total. It also shows what you spent today and, if you set a budget, how much is left. If a payment comes in while the screen is up, the numbers update straight away.
 
 The app also has its own screen. There you can browse months, see each payment, add cash or other payments by hand, fix or delete entries, and set a monthly budget.
 
@@ -28,11 +38,11 @@ The app also has its own screen. There you can browse months, see each payment, 
 2. Open the downloaded file. If Android asks, allow your browser to install unknown apps. If Play Protect warns about an unknown app, choose **Install anyway**. It warns because the app wasn't installed from the Play Store.
 3. Open **Save My Money** and follow its two setup steps:
    - **Allow notification access** and turn on *Save My Money – Wallet payments*.
-   - **Open Accessibility settings**, tap *Save My Money – Wallet banner* (under *Downloaded apps*), and turn it on.
+   - **Open Accessibility settings**, tap *Save My Money – Wallet spending* (under *Downloaded apps*), and turn it on.
 
    > **Switch greyed out / "Restricted setting"?** Android blocks these two switches for apps installed from a file until you allow it. Go to **Settings → Apps → Save My Money**, tap **⋮** (top right), choose **Allow restricted settings**, then go back and turn the switches on. The ⋮ option only appears after you've tried the switch once.
 4. Make sure Google Wallet's notifications are on: **Settings → Notifications → App notifications → Google Wallet**. Also check the notification settings inside the Wallet app.
-5. Back in the app, tap **Preview the Wallet banner** to see what it looks like.
+5. Back in the app, tap **Preview what Wallet will show** to see it.
 
 Every push to this repo builds a fresh APK, and the link above always points to the newest one. Installing it again updates the app and keeps your data.
 
@@ -59,7 +69,8 @@ The code layout:
 | `app/src/main/java/com/savemymoney/app/parse/PaymentParser.kt` | Pulls amount, currency and merchant out of notification text |
 | `.../service/WalletNotificationListener.kt` | Reads Google Wallet's notifications and records payments |
 | `.../service/WalletWatcherService.kt` | Notices when Google Wallet opens |
-| `.../service/SpendingBanner.kt` | The banner shown over Wallet |
+| `.../service/SpendingScreen.kt` | The full-screen page shown in front of Wallet |
+| `.../service/SpendingBanner.kt` | The small banner (the alternative style) |
 | `.../data/` | Local SQLite storage, settings, currency and monthly totals |
 | `.../ui/` | The app's screens (Jetpack Compose) |
 

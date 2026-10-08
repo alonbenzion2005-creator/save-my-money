@@ -185,7 +185,7 @@ private fun SetupCard(hasNotificationAccess: Boolean, hasWalletWatcher: Boolean)
             SetupStep(
                 done = hasWalletWatcher,
                 title = "2. Show your total when Wallet opens",
-                body = "In Accessibility, open “Save My Money – Wallet banner” (under Downloaded apps) and turn it on. " +
+                body = "In Accessibility, open “Save My Money – Wallet spending” (under Downloaded apps) and turn it on. " +
                     "It only notices when Google Wallet opens; it doesn’t read your screen.",
                 action = "Open Accessibility settings",
                 onAction = { SystemScreens.openAccessibility(context) },
@@ -272,11 +272,11 @@ private fun TotalCard(spending: MonthSpending, canPreview: Boolean) {
                 TextButton(
                     onClick = {
                         if (!WalletWatcherService.preview()) {
-                            Toast.makeText(context, "Turn on the Wallet banner first", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Turn on the Accessibility switch first", Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.padding(top = 4.dp),
-                ) { Text("Preview the Wallet banner") }
+                ) { Text("Preview what Wallet will show") }
             }
         }
     }

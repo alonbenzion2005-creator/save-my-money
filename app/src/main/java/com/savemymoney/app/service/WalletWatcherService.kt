@@ -1,8 +1,13 @@
 package com.savemymoney.app.service
 
 import android.accessibilityservice.AccessibilityService
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat
 import com.savemymoney.app.data.PaymentStore
 import com.savemymoney.app.data.Prefs
 import kotlinx.coroutines.MainScope
@@ -18,14 +23,25 @@ class WalletWatcherService : AccessibilityService() {
 
     private val scope = MainScope()
     private var banner: SpendingBanner? = null
+    private var screen: SpendingScreen? = null
     private var walletInFront = false
 
     /** Windows that pop up over an app without the user leaving it. */
     private var passingPackages: Set<String> = emptySet()
 
+    /** Don't leave the full screen up over the lock screen. */
+    private val screenOff = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            screen?.hide(animate = false)
+            banner?.hide(animate = false)
+        }
+    }
+
     override fun onServiceConnected() {
         val banner = SpendingBanner(this)
+        val screen = SpendingScreen(this)
         this.banner = banner
+        this.screen = screen
         passingPackages = setOf(
             packageName,
             "android",
@@ -33,9 +49,20 @@ class WalletWatcherService : AccessibilityService() {
             "com.android.permissioncontroller",
             "com.google.android.permissioncontroller",
         ) + keyboardPackages()
+        ContextCompat.registerReceiver(
+            this,
+            screenOff,
+            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
         running = this
-        // A payment made while the banner is up (e.g. tapping to pay) updates it straight away.
-        scope.launch { PaymentStore.get(this@WalletWatcherService).changes.drop(1).collect { banner.refresh() } }
+        // A payment made while the numbers are up (e.g. tapping to pay) updates them straight away.
+        scope.launch {
+            PaymentStore.get(this@WalletWatcherService).changes.drop(1).collect {
+                banner.refresh()
+                screen.refresh()
+            }
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
@@ -43,8 +70,14 @@ class WalletWatcherService : AccessibilityService() {
         val packageName = event.packageName?.toString() ?: return
         val isWallet = WalletApps.isWalletWindow(packageName, event.className?.toString())
         if (!isWallet && packageName in passingPackages) return
-        if (isWallet && !walletInFront && Prefs(this).bannerEnabled) banner?.show()
+        if (isWallet && !walletInFront && Prefs(this).bannerEnabled) showSpending()
+        // Left Wallet (home, recents, another app): don't leave the full screen behind.
+        if (!isWallet) screen?.hide()
         walletInFront = isWallet
+    }
+
+    private fun showSpending() {
+        if (Prefs(this).fullScreen) screen?.show() else banner?.show()
     }
 
     override fun onInterrupt() = Unit
@@ -52,7 +85,9 @@ class WalletWatcherService : AccessibilityService() {
     override fun onDestroy() {
         if (running === this) running = null
         scope.cancel()
+        runCatching { unregisterReceiver(screenOff) }
         banner?.hide(animate = false)
+        screen?.hide(animate = false)
         super.onDestroy()
     }
 
@@ -66,10 +101,10 @@ class WalletWatcherService : AccessibilityService() {
     companion object {
         private var running: WalletWatcherService? = null
 
-        /** Shows the banner now, for the preview button. False if the service isn't turned on. */
+        /** Shows what Wallet will show, for the preview button. False if the service isn't turned on. */
         fun preview(): Boolean {
-            val banner = running?.banner ?: return false
-            banner.show()
+            val service = running ?: return false
+            service.showSpending()
             return true
         }
     }

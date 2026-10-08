@@ -16,7 +16,18 @@ class Prefs(context: Context) {
         get() = prefs.getString("currency", null)?.takeIf { Currencies.isValid(it) }
         set(value) = prefs.edit { if (value == null) remove("currency") else putString("currency", value) }
 
+    /** Whether anything is shown when Google Wallet opens. */
     var bannerEnabled: Boolean
         get() = prefs.getBoolean("banner_enabled", true)
         set(value) = prefs.edit { putBoolean("banner_enabled", value) }
+
+    /** Full screen in front of Wallet (true), or the small banner at the top (false). */
+    var fullScreen: Boolean
+        get() = prefs.getBoolean("full_screen", true)
+        set(value) = prefs.edit { putBoolean("full_screen", value) }
+
+    /** Seconds before the full screen closes by itself, or 0 to wait for the button. */
+    var autoCloseSeconds: Int
+        get() = prefs.getInt("auto_close_seconds", 10)
+        set(value) = prefs.edit { putInt("auto_close_seconds", value) }
 }
