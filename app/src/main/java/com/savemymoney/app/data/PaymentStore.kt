@@ -83,6 +83,14 @@ class PaymentStore private constructor(context: Context) :
             }
         }
 
+    /** Total of the payments in [currency] made after [afterMillis] (refunds count as negative). */
+    fun spentSince(currency: String, afterMillis: Long): Long =
+        readableDatabase.rawQuery(
+            "SELECT COALESCE(SUM(amount_cents), 0) FROM payments " +
+                "WHERE hidden = 0 AND currency = ? AND time_millis > ?",
+            arrayOf(currency, afterMillis.toString()),
+        ).use { if (it.moveToFirst()) it.getLong(0) else 0L }
+
     /** The currency most payments were made in, if there are any. */
     fun mostUsedCurrency(): String? =
         readableDatabase.rawQuery(
@@ -232,7 +240,8 @@ class PaymentStore private constructor(context: Context) :
         changed()
     }
 
-    private fun changed() = changeCount.update { it + 1 }
+    /** Tells screens and the Wallet display to reload; also used when a setting they show changes. */
+    fun changed() = changeCount.update { it + 1 }
 
     companion object {
         const val SOURCE_WALLET = "wallet"

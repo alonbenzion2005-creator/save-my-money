@@ -8,97 +8,148 @@
         android:id="@+id/screen_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:letterSpacing="0.12"
-            android:text="@string/app_name"
-            android:textAllCaps="true"
-            android:textColor="@color/banner_text_secondary"
-            android:textSize="13sp" />
-
-        <Space
+        <!-- Scrolls only if it can't fit (e.g. with a very large font size); the button stays put. -->
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:fillViewport="true">
 
-        <TextView
-            android:id="@+id/screen_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/banner_text_secondary"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/screen_total"
-            android:layout_width="match_parent"
-            android:layout_height="96dp"
-            android:autoSizeMaxTextSize="72sp"
-            android:autoSizeMinTextSize="28sp"
-            android:autoSizeTextType="uniform"
-            android:gravity="center"
-            android:maxLines="1"
-            android:textColor="@color/banner_text"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/screen_others"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textDirection="ltr"
-            android:textColor="@color/banner_text_secondary"
-            android:textSize="18sp"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/screen_detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textDirection="ltr"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/banner_text_secondary"
-            android:textSize="18sp" />
-
-        <LinearLayout
-            android:id="@+id/screen_budget_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <ProgressBar
-                android:id="@+id/screen_budget"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                android:maxHeight="10dp"
-                android:minHeight="10dp"
-                android:progressBackgroundTint="@color/banner_track" />
-
-            <TextView
-                android:id="@+id/screen_budget_text"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:textColor="@color/banner_text"
-                android:textDirection="ltr"
-                android:textSize="18sp" />
-        </LinearLayout>
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/app_name"
+                    android:textAllCaps="true"
+                    android:textColor="@color/banner_text_secondary"
+                    android:textSize="13sp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/screen_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/banner_text_secondary"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/screen_total"
+                    android:layout_width="match_parent"
+                    android:layout_height="96dp"
+                    android:autoSizeMaxTextSize="72sp"
+                    android:autoSizeMinTextSize="28sp"
+                    android:autoSizeTextType="uniform"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:textColor="@color/banner_text"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/screen_others"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/banner_text_secondary"
+                    android:textDirection="ltr"
+                    android:textSize="18sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/screen_detail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/banner_text_secondary"
+                    android:textDirection="ltr"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:id="@+id/screen_budget_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:id="@+id/screen_budget"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        android:maxHeight="10dp"
+                        android:minHeight="10dp"
+                        android:progressBackgroundTint="@color/banner_track" />
+
+                    <TextView
+                        android:id="@+id/screen_budget_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:textColor="@color/banner_text"
+                        android:textDirection="ltr"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/screen_balance_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:background="@drawable/screen_card"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/balance_label"
+                        android:textColor="@color/banner_text_secondary"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/screen_balance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/banner_text"
+                        android:textSize="32sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/screen_balance_note"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textColor="@color/banner_text_secondary"
+                        android:textDirection="ltr"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </ScrollView>
 
         <TextView
             android:id="@+id/screen_continue"
             android:layout_width="match_parent"
             android:layout_height="56dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/screen_button"
             android:clickable="true"
             android:focusable="true"

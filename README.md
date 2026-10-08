@@ -13,6 +13,11 @@ An Android app that shows **how much you've spent this month** full screen whene
 │  ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░   │
 │   ₪765.50 left of ₪2,000.00    │
 │                                │
+│    Bank balance (estimated)    │
+│          ₪4,580.00             │
+│ ₪5,000.00 on Tue 6 Oct − ₪420  │
+│        spent since             │
+│                                │
 │  ┌──────────────────────────┐  │
 │  │  Continue to Wallet (10) │  │
 │  └──────────────────────────┘  │
@@ -33,6 +38,12 @@ Google Wallet doesn't let other apps read your payment history. So the app works
 The app also has its own screen. There you can browse months, see each payment, add cash or other payments by hand, fix or delete entries, and set a monthly budget.
 
 **Privacy:** the app has no internet permission, so nothing it records can leave your phone. It only keeps notifications from Google Wallet and from payment notifications posted by Google Play services.
+
+## Bank balance
+
+The app can't connect to your bank: in Israel, only licensed companies can read bank accounts. Instead, type in what your bank app shows, every couple of days. Use **Enter balance** or **Update balance** on the app's main screen. From then on, Save My Money subtracts every payment it records. The full screen and the app then show roughly what's left. After 2 days it reminds you to type in a fresh number.
+
+It's an estimate. It only knows about payments the app recorded. Also, credit-card purchases usually leave your bank account later, when the monthly card bill is paid.
 
 ## Install it on your phone
 

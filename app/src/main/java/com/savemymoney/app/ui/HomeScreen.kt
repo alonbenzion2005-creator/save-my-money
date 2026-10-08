@@ -48,11 +48,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.savemymoney.app.data.BalanceEstimate
 import com.savemymoney.app.data.MonthSpending
 import com.savemymoney.app.data.Payment
 import com.savemymoney.app.data.PaymentStore
@@ -81,6 +83,10 @@ fun HomeScreen(resumeCount: Int, onOpenSettings: () -> Unit, onOpenLog: () -> Un
     val hasWalletWatcher = remember(resumeCount) { SystemScreens.hasWalletWatcher(context) }
     var adding by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<Payment?>(null) }
+    val balance by produceState<BalanceState?>(null, version, resumeCount) {
+        value = BalanceState(withContext(Dispatchers.IO) { BalanceEstimate.load(context) })
+    }
+    var editingBalance by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -120,6 +126,10 @@ fun HomeScreen(resumeCount: Int, onOpenSettings: () -> Unit, onOpenLog: () -> Un
             val current = spending
             if (current != null) {
                 item { TotalCard(current, canPreview = hasWalletWatcher) }
+                val loadedBalance = balance
+                if (current.isCurrentMonth && loadedBalance != null) {
+                    item { BalanceCard(loadedBalance.estimate, onUpdate = { editingBalance = true }) }
+                }
                 if (current.payments.isEmpty()) {
                     item {
                         Text(
@@ -136,6 +146,24 @@ fun HomeScreen(resumeCount: Int, onOpenSettings: () -> Unit, onOpenLog: () -> Un
                 }
             }
         }
+    }
+
+    if (editingBalance) {
+        val estimate = balance?.estimate
+        BalanceDialog(
+            currentCurrency = estimate?.entered?.currency ?: spending?.mainCurrency ?: "USD",
+            onDismiss = { editingBalance = false },
+            onSave = { cents, currency ->
+                BalanceEstimate.save(context, cents, currency)
+                editingBalance = false
+            },
+            onRemove = estimate?.let { e ->
+                {
+                    BalanceEstimate.save(context, null, e.entered.currency)
+                    editingBalance = false
+                }
+            },
+        )
     }
 
     val beingEdited = editing
@@ -278,6 +306,47 @@ private fun TotalCard(spending: MonthSpending, canPreview: Boolean) {
                     },
                     modifier = Modifier.padding(top = 4.dp),
                 ) { Text("Preview what Wallet will show") }
+            }
+        }
+    }
+}
+
+/** Wraps the estimate so "loaded, but no balance entered" differs from "still loading". */
+private class BalanceState(val estimate: BalanceEstimate?)
+
+@Composable
+private fun BalanceCard(estimate: BalanceEstimate?, onUpdate: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp)) {
+            if (estimate == null) {
+                Text("Bank balance", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    "Type in your bank balance every couple of days. The app subtracts what you spend " +
+                        "after that, so you can see roughly what's left.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                FilledTonalButton(onClick = onUpdate, modifier = Modifier.padding(top = 8.dp)) { Text("Enter balance") }
+            } else {
+                Text("Bank balance (estimated)", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    estimate.estimate,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (estimate.estimateCents < 0) MaterialTheme.colorScheme.error else Color.Unspecified,
+                )
+                Text(
+                    estimate.explanation,
+                    style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Ltr),
+                )
+                if (estimate.isStale) {
+                    Text(
+                        "It's been 2 days or more — time to type in a fresh balance.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+                FilledTonalButton(onClick = onUpdate, modifier = Modifier.padding(top = 8.dp)) { Text("Update balance") }
             }
         }
     }

@@ -17,6 +17,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.savemymoney.app.R
+import com.savemymoney.app.data.BalanceEstimate
 import com.savemymoney.app.data.MonthSpending
 import com.savemymoney.app.data.monthName
 import java.time.YearMonth
@@ -113,6 +114,9 @@ class SpendingBanner(private val service: AccessibilityService) : SpendingDispla
         } else {
             bar.isVisible = false
             detail.text = spending.countLine
+        }
+        BalanceEstimate.load(service)?.let { balance ->
+            detail.append("\n" + service.getString(R.string.banner_balance, balance.estimate))
         }
     }
 

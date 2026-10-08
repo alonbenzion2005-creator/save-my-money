@@ -7,4 +7,7 @@
     <string name="banner_label">Spent in %1$s</string>
     <string name="screen_continue">Continue to Wallet</string>
     <string name="screen_continue_countdown">Continue to Wallet (%1$d)</string>
+    <string name="balance_label">Bank balance (estimated)</string>
+    <string name="balance_stale">Time to type in a fresh balance in Save My Money</string>
+    <string name="banner_balance">About %1$s in the bank</string>
 </resources>

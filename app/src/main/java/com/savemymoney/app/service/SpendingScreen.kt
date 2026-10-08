@@ -16,6 +16,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.savemymoney.app.R
+import com.savemymoney.app.data.BalanceEstimate
 import com.savemymoney.app.data.MonthSpending
 import com.savemymoney.app.data.Prefs
 import com.savemymoney.app.data.monthName
@@ -144,6 +145,21 @@ class SpendingScreen(private val service: AccessibilityService) : SpendingDispla
             val color = service.getColor(if (spending.overBudget) R.color.banner_over else R.color.banner_ok)
             bar.progressTintList = ColorStateList.valueOf(color)
             v.findViewById<TextView>(R.id.screen_budget_text).text = spending.budgetLine
+        }
+
+        val balance = BalanceEstimate.load(service)
+        v.findViewById<View>(R.id.screen_balance_group).isVisible = balance != null
+        if (balance != null) {
+            v.findViewById<TextView>(R.id.screen_balance).apply {
+                text = balance.estimate
+                setTextColor(service.getColor(if (balance.estimateCents < 0) R.color.banner_over else R.color.banner_text))
+            }
+            v.findViewById<TextView>(R.id.screen_balance_note).text =
+                if (balance.isStale) {
+                    balance.explanation + "\n" + service.getString(R.string.balance_stale)
+                } else {
+                    balance.explanation
+                }
         }
     }
 

@@ -30,4 +30,25 @@ class Prefs(context: Context) {
     var autoCloseSeconds: Int
         get() = prefs.getInt("auto_close_seconds", 10)
         set(value) = prefs.edit { putInt("auto_close_seconds", value) }
+
+    /** The bank balance the user last typed in, or null if they haven't. */
+    var enteredBalance: EnteredBalance?
+        get() {
+            if (!prefs.contains("balance_cents")) return null
+            val currency = prefs.getString("balance_currency", null)?.takeIf { Currencies.isValid(it) } ?: return null
+            return EnteredBalance(prefs.getLong("balance_cents", 0), currency, prefs.getLong("balance_time", 0))
+        }
+        set(value) = prefs.edit {
+            if (value == null) {
+                remove("balance_cents")
+                remove("balance_currency")
+                remove("balance_time")
+            } else {
+                putLong("balance_cents", value.cents)
+                putString("balance_currency", value.currency)
+                putLong("balance_time", value.timeMillis)
+            }
+        }
 }
+
+data class EnteredBalance(val cents: Long, val currency: String, val timeMillis: Long)
