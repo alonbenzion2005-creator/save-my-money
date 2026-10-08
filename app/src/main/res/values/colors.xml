@@ -1,0 +1,9 @@
+<resources>
+    <color name="ic_launcher_background">#1B873F</color>
+    <color name="banner_background">#F2202124</color>
+    <color name="banner_text">#FFFFFFFF</color>
+    <color name="banner_text_secondary">#CCFFFFFF</color>
+    <color name="banner_track">#33FFFFFF</color>
+    <color name="banner_ok">#FF7EE2A8</color>
+    <color name="banner_over">#FFFF8A80</color>
+</resources>
