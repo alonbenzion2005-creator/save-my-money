@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.savemymoney.app.data.LoggedNotification
 import com.savemymoney.app.data.PaymentStore
+import com.savemymoney.app.service.BitApp
 import com.savemymoney.app.service.WalletApps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -52,7 +53,7 @@ fun LogScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Wallet notifications") },
+                title = { Text("Payment notifications") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -75,7 +76,7 @@ fun LogScreen(onBack: () -> Unit) {
         ) {
             item {
                 Text(
-                    "The latest notifications from Google Wallet and what Save My Money did with each. " +
+                    "The latest notifications from Google Wallet and bit, and what Save My Money did with each. " +
                         "If a payment is missing from your total, look for it here.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -83,7 +84,7 @@ fun LogScreen(onBack: () -> Unit) {
             if (entries.isEmpty()) {
                 item {
                     Text(
-                        "Nothing yet — pay with Google Wallet and its notification will appear here.",
+                        "Nothing yet. Pay with Google Wallet or send money with bit, and the notification will appear here.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -97,7 +98,12 @@ fun LogScreen(onBack: () -> Unit) {
 @Composable
 private fun LogEntry(entry: LoggedNotification) {
     val time = Instant.ofEpochMilli(entry.timeMillis).atZone(ZoneId.systemDefault()).format(timeFormat)
-    val app = if (entry.packageName == WalletApps.GOOGLE_WALLET) "Google Wallet" else "Google Play services"
+    val app = when (entry.packageName) {
+        WalletApps.GOOGLE_WALLET -> "Google Wallet"
+        WalletApps.PLAY_SERVICES -> "Google Play services"
+        BitApp.PACKAGE -> "bit"
+        else -> "SMS from bit"
+    }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
             Text("$time · $app", style = MaterialTheme.typography.labelMedium)

@@ -33,6 +33,9 @@ class PaymentParserTest {
         )
         assertEquals(ParsedPayment(1200, "ILS", "רמי לוי"), parse("רמי לוי", "12 ש\"ח"))
         assertEquals(ParsedPayment(1200, "ILS", "רמי לוי"), parse("רמי לוי", "12 ש״ח"))
+        // Hebrew prefix hyphen ("for 50 ₪"), not a minus sign.
+        assertEquals(5000L, parse("רמי לוי", "שולם ב-50 ₪")?.amountCents)
+        assertEquals(5000L, parse("רמי לוי", "שולם ב-₪50")?.amountCents)
     }
 
     @Test

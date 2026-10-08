@@ -99,17 +99,19 @@ class PaymentStore private constructor(context: Context) :
         ).use { if (it.moveToFirst()) it.getString(0) else null }
 
     /**
-     * Records a payment seen in a notification. Returns false if it was already
-     * recorded: Wallet updates its notifications, Play services can post the same
-     * payment again, and the listener rescans open notifications when it restarts.
-     * Rows the user deleted are only hidden, so they're matched here too and stay deleted.
+     * Records a payment seen in a notification ([source] is [SOURCE_WALLET] or [SOURCE_BIT]).
+     * Returns false if it was already recorded: notifications get updated, the same payment
+     * can arrive twice (Wallet and Play services, or bit's push and its SMS), and the listener
+     * rescans open notifications when it restarts. Rows the user deleted are only hidden, so
+     * they're matched here too and stay deleted.
      */
     @Synchronized
-    fun addWalletPayment(
+    fun addNotificationPayment(
         payment: ParsedPayment,
         timeMillis: Long,
         packageName: String,
         notificationKey: String,
+        source: String,
     ): Boolean {
         val db = writableDatabase
         val merchant = payment.merchant ?: DEFAULT_MERCHANT
@@ -117,7 +119,7 @@ class PaymentStore private constructor(context: Context) :
             "SELECT id, merchant FROM payments WHERE source = ? AND amount_cents = ? AND currency = ? " +
                 "AND time_millis BETWEEN ? AND ? AND (notification_key = ? OR package <> ?) LIMIT 1",
             arrayOf(
-                SOURCE_WALLET,
+                source,
                 payment.amountCents.toString(),
                 payment.currency,
                 (timeMillis - SAME_PAYMENT_WINDOW_MS).toString(),
@@ -144,7 +146,7 @@ class PaymentStore private constructor(context: Context) :
                 put("currency", payment.currency)
                 put("merchant", merchant)
                 put("time_millis", timeMillis)
-                put("source", SOURCE_WALLET)
+                put("source", source)
                 put("package", packageName)
                 put("notification_key", notificationKey)
             },
@@ -246,6 +248,7 @@ class PaymentStore private constructor(context: Context) :
     companion object {
         const val SOURCE_WALLET = "wallet"
         const val SOURCE_MANUAL = "manual"
+        const val SOURCE_BIT = "bit"
         const val DEFAULT_MERCHANT = "Google Wallet payment"
         private const val SAME_PAYMENT_WINDOW_MS = 10 * 60 * 1000L
         private const val LOG_SIZE = 100

@@ -186,13 +186,15 @@ fun SettingsScreen(onBack: () -> Unit) {
             Text(
                 "Google Wallet doesn’t let other apps read your payments, so Save My Money reads the " +
                     "notification Wallet shows after each tap-to-pay. Payments you made before installing " +
-                    "the app, or with Wallet’s notifications turned off, aren’t counted — add those by hand.",
+                    "the app, or with Wallet’s notifications turned off, aren’t counted — add those by hand. " +
+                    "For bit, it counts the message bit sends when someone has received money you sent.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Text("Privacy", style = MaterialTheme.typography.titleSmall)
             Text(
-                "Everything stays on this phone. The app has no internet access, and it only keeps " +
-                    "notifications from Google Wallet and Google Play services.",
+                "Everything stays on this phone. The app has no internet access. It only keeps " +
+                    "notifications from Google Wallet and Google Play services, and from bit (its own " +
+                    "notifications and SMS from the sender “bit”). It ignores all other notifications and messages.",
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

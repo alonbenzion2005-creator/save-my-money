@@ -45,12 +45,21 @@ The app can't connect to your bank: in Israel, only licensed companies can read 
 
 It's an estimate. It only knows about payments the app recorded. Also, credit-card purchases usually leave your bank account later, when the monthly card bill is paid.
 
+## bit transfers
+
+bit tells you, by push notification or SMS, when someone has **received** money you sent. Save My Money reads that message and counts the amount as spending, labelled "bit". It reads bit's own notifications and SMS whose sender is "bit", and ignores all other messages.
+
+- It's counted when the other person receives the money, which can be a little after you send it.
+- bit hasn't published what these messages say, so the app only counts a message that has an amount and clearly says you sent it. Money coming in, requests and failed transfers are never counted.
+- After your first bit transfer, tap the bell icon. It shows every bit message the app saw and whether it was counted. If it says "Not counted", send me the text (you can change the name and amount) and I'll teach the app that wording. In the meantime, add the transfer with **Add**.
+- Paying a business with bit may not send any message. Add those with **Add**.
+
 ## Install it on your phone
 
 1. On your phone, open **https://github.com/alonbenzion2005-creator/save-my-money/releases/latest** and tap **SaveMyMoney.apk** to download it.
 2. Open the downloaded file. If Android asks, allow your browser to install unknown apps. If Play Protect warns about an unknown app, choose **Install anyway**. It warns because the app wasn't installed from the Play Store.
 3. Open **Save My Money** and follow its two setup steps:
-   - **Allow notification access** and turn on *Save My Money – Wallet payments*.
+   - **Allow notification access** and turn on *Save My Money – payments*.
    - **Open Accessibility settings**, tap *Save My Money – Wallet spending* (under *Downloaded apps*), and turn it on.
 
    > **Switch greyed out / "Restricted setting"?** Android blocks these two switches for apps installed from a file until you allow it. Go to **Settings → Apps → Save My Money**, tap **⋮** (top right), choose **Allow restricted settings**, then go back and turn the switches on. The ⋮ option only appears after you've tried the switch once.

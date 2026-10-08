@@ -94,7 +94,7 @@ fun HomeScreen(resumeCount: Int, onOpenSettings: () -> Unit, onOpenLog: () -> Un
                 title = { Text("Save My Money") },
                 actions = {
                     IconButton(onClick = onOpenLog) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Wallet notifications")
+                        Icon(Icons.Default.Notifications, contentDescription = "Payment notifications")
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
@@ -206,8 +206,8 @@ private fun SetupCard(hasNotificationAccess: Boolean, hasWalletWatcher: Boolean)
             Text("Two switches to turn on", style = MaterialTheme.typography.titleMedium)
             SetupStep(
                 done = hasNotificationAccess,
-                title = "1. Read Google Wallet payment notifications",
-                body = "This is how the app learns what you paid. Turn on “Save My Money – Wallet payments”.",
+                title = "1. Read Google Wallet and bit payment notifications",
+                body = "This is how the app learns what you paid. Turn on “Save My Money – payments”.",
                 action = "Allow notification access",
                 onAction = { SystemScreens.openNotificationAccess(context) },
             )
@@ -357,7 +357,11 @@ private val dateFormat = DateTimeFormatter.ofPattern("EEE d MMM · HH:mm", Local
 @Composable
 private fun PaymentRow(payment: Payment, onClick: () -> Unit) {
     val time = Instant.ofEpochMilli(payment.timeMillis).atZone(ZoneId.systemDefault()).format(dateFormat)
-    val source = if (payment.source == PaymentStore.SOURCE_MANUAL) "added by you" else "Google Wallet"
+    val source = when (payment.source) {
+        PaymentStore.SOURCE_MANUAL -> "added by you"
+        PaymentStore.SOURCE_BIT -> "bit"
+        else -> "Google Wallet"
+    }
     ListItem(
         modifier = Modifier.clip(MaterialTheme.shapes.medium).clickable(onClick = onClick),
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),

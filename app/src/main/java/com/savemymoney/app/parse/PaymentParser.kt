@@ -150,9 +150,11 @@ object PaymentParser {
     //         5 sign, 6 number, 7 currency           — "45.90 ₪", "12,34 €"
     // The second form must not be followed by another number, so that in
     // "Oct 7 $4.50" the amount is 4.50 rather than 7.
+    // A hyphen straight after a letter is Hebrew's prefix hyphen ("ב-50 ₪", "ה-50 ₪"), not a minus.
+    private const val SIGN = "((?<![\\p{L}\\d])[-–])?"
     private val AMOUNT = Regex(
-        "([-–]?)($CURRENCY)$WS*([-–]?)$WS*($NUMBER)" +
-            "|(?<![\\d.,])([-–]?)($NUMBER)$WS*($CURRENCY)(?!$WS*[-–]?\\d)",
+        "$SIGN($CURRENCY)$WS*([-–]?)$WS*($NUMBER)" +
+            "|(?<![\\d.,])$SIGN($NUMBER)$WS*($CURRENCY)(?!$WS*[-–]?\\d)",
     )
 
     private val CARD = Regex(
