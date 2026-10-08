@@ -155,7 +155,13 @@ class PaymentStore private constructor(context: Context) :
         return true
     }
 
-    fun addManual(amountCents: Long, currency: String, merchant: String, timeMillis: Long) {
+    fun addManual(
+        amountCents: Long,
+        currency: String,
+        merchant: String,
+        timeMillis: Long,
+        source: String = SOURCE_MANUAL,
+    ) {
         writableDatabase.insert(
             "payments",
             null,
@@ -164,7 +170,7 @@ class PaymentStore private constructor(context: Context) :
                 put("currency", currency)
                 put("merchant", merchant)
                 put("time_millis", timeMillis)
-                put("source", SOURCE_MANUAL)
+                put("source", source)
             },
         )
         changed()
@@ -249,6 +255,10 @@ class PaymentStore private constructor(context: Context) :
         const val SOURCE_WALLET = "wallet"
         const val SOURCE_MANUAL = "manual"
         const val SOURCE_BIT = "bit"
+
+        /** What was spent earlier in the month, typed in once when setting up the app. */
+        const val SOURCE_OPENING = "opening"
+        const val OPENING_MERCHANT = "Spent before setting up the app"
         const val DEFAULT_MERCHANT = "Google Wallet payment"
         private const val SAME_PAYMENT_WINDOW_MS = 10 * 60 * 1000L
         private const val LOG_SIZE = 100

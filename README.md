@@ -70,7 +70,7 @@ Every push to this repo builds a fresh APK, and the link above always points to 
 
 ## Good to know
 
-- **Only payments made after setup are counted automatically.** For anything earlier this month, or paid another way, use **Add**.
+- **Only payments made after setup are counted automatically.** When you set the app up partway through a month, the main screen asks what you've already spent this month. Type it in once as a single amount. It counts toward this month's total but isn't taken off your bank balance. For anything else paid another way, use **Add**.
 - **Wallet's notification can take a minute or two to arrive** after you pay, and it needs internet. If the full screen is up when it arrives, the total updates straight away.
 - **Is a payment missing or wrong?** Tap the bell icon in the app. It lists every Wallet notification the app saw and what it did with each one. Tap a payment to edit or delete it.
 - **Several currencies** are totalled separately. The big number uses your main currency, which is the one you pay in most. You can change it in Settings.

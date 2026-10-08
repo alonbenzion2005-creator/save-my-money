@@ -31,6 +31,11 @@ class Prefs(context: Context) {
         get() = prefs.getInt("auto_close_seconds", 10)
         set(value) = prefs.edit { putInt("auto_close_seconds", value) }
 
+    /** The month ("2026-10") in which the user said they had nothing to add from before setting up. */
+    var openingDismissedMonth: String?
+        get() = prefs.getString("opening_dismissed_month", null)
+        set(value) = prefs.edit { putString("opening_dismissed_month", value) }
+
     /** The bank balance the user last typed in, or null if they haven't. */
     var enteredBalance: EnteredBalance?
         get() {

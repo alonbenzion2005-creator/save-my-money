@@ -20,15 +20,19 @@ import androidx.compose.ui.unit.dp
 import com.savemymoney.app.data.Currencies
 import com.savemymoney.app.data.Money
 
-/** Asks for the balance the bank app shows right now. */
+/** Asks for a single amount: the bank balance, or what was spent before setting up the app. */
 @Composable
-fun BalanceDialog(
+fun AmountDialog(
+    title: String,
+    message: String,
+    label: String,
+    hint: String,
     currentCurrency: String,
     onDismiss: () -> Unit,
     onSave: (cents: Long, currency: String) -> Unit,
-    onRemove: (() -> Unit)?,
+    onRemove: (() -> Unit)? = null,
 ) {
-    // Starts empty: the point is to type in today's number, not to edit the old one.
+    // Starts empty: the point is to type in today's number, not to edit an old one.
     var amount by remember { mutableStateOf("") }
     var currency by remember { mutableStateOf(currentCurrency) }
     val cents = Money.parseInput(amount)
@@ -36,22 +40,18 @@ fun BalanceDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Bank balance") },
+        title = { Text(title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "Type in what your bank app shows right now. Save My Money will subtract what you " +
-                        "spend from now on.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                Text(message, style = MaterialTheme.typography.bodyMedium)
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { Text("Balance") },
+                    label = { Text(label) },
                     supportingText = {
                         // Show how the number was read, so "5,000" vs "5.000" can't silently go wrong.
                         val saved = cents?.takeIf { currencyOk }?.let { "Will save " + Money.format(it, currency) }
-                        Text(saved ?: "Put a minus sign in front if you're overdrawn")
+                        Text(saved ?: hint)
                     },
                     isError = amount.isNotBlank() && cents == null,
                     singleLine = true,

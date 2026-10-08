@@ -58,6 +58,7 @@ import com.savemymoney.app.data.BalanceEstimate
 import com.savemymoney.app.data.MonthSpending
 import com.savemymoney.app.data.Payment
 import com.savemymoney.app.data.PaymentStore
+import com.savemymoney.app.data.Prefs
 import com.savemymoney.app.data.Money
 import com.savemymoney.app.data.label
 import com.savemymoney.app.service.WalletWatcherService
@@ -87,6 +88,13 @@ fun HomeScreen(resumeCount: Int, onOpenSettings: () -> Unit, onOpenLog: () -> Un
         value = BalanceState(withContext(Dispatchers.IO) { BalanceEstimate.load(context) })
     }
     var editingBalance by remember { mutableStateOf(false) }
+    var addingOpening by remember { mutableStateOf(false) }
+    val prefs = remember { Prefs(context) }
+    val installedThisMonth = remember {
+        val installed = context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime
+        YearMonth.from(Instant.ofEpochMilli(installed).atZone(ZoneId.systemDefault())) == YearMonth.now()
+    }
+    var openingDismissed by remember { mutableStateOf(prefs.openingDismissedMonth == YearMonth.now().toString()) }
 
     Scaffold(
         topBar = {
@@ -125,6 +133,20 @@ fun HomeScreen(resumeCount: Int, onOpenSettings: () -> Unit, onOpenLog: () -> Un
             item { MonthPicker(month, onChange = { month = it }) }
             val current = spending
             if (current != null) {
+                // Set up partway through the month: offer to add what was spent before today.
+                val askForOpening = current.isCurrentMonth && installedThisMonth && !openingDismissed &&
+                    current.payments.none { it.source == PaymentStore.SOURCE_OPENING }
+                if (askForOpening) {
+                    item {
+                        OpeningCard(
+                            onAdd = { addingOpening = true },
+                            onDismiss = {
+                                prefs.openingDismissedMonth = YearMonth.now().toString()
+                                openingDismissed = true
+                            },
+                        )
+                    }
+                }
                 item { TotalCard(current, canPreview = hasWalletWatcher) }
                 val loadedBalance = balance
                 if (current.isCurrentMonth && loadedBalance != null) {
@@ -148,9 +170,32 @@ fun HomeScreen(resumeCount: Int, onOpenSettings: () -> Unit, onOpenLog: () -> Un
         }
     }
 
+    if (addingOpening) {
+        AmountDialog(
+            title = "Spent so far this month",
+            message = "Roughly how much have you spent since the 1st, before setting up the app? " +
+                "It's added to this month's total once. It isn't taken off the bank balance you type in, " +
+                "because that money is already gone.",
+            label = "Spent so far",
+            hint = "You can change it later by tapping it in the list",
+            currentCurrency = spending?.mainCurrency ?: "USD",
+            onDismiss = { addingOpening = false },
+            onSave = { cents, currency ->
+                val startOfMonth = YearMonth.now().atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                store.addManual(cents, currency, PaymentStore.OPENING_MERCHANT, startOfMonth, PaymentStore.SOURCE_OPENING)
+                addingOpening = false
+            },
+        )
+    }
+
     if (editingBalance) {
         val estimate = balance?.estimate
-        BalanceDialog(
+        AmountDialog(
+            title = "Bank balance",
+            message = "Type in what your bank app shows right now. Save My Money will subtract what you " +
+                "spend from now on.",
+            label = "Balance",
+            hint = "Put a minus sign in front if you're overdrawn",
             currentCurrency = estimate?.entered?.currency ?: spending?.mainCurrency ?: "USD",
             onDismiss = { editingBalance = false },
             onSave = { cents, currency ->
@@ -311,6 +356,28 @@ private fun TotalCard(spending: MonthSpending, canPreview: Boolean) {
     }
 }
 
+@Composable
+private fun OpeningCard(onAdd: () -> Unit, onDismiss: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Just set up the app?", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Payments from before today aren't in the total. Add what you've already spent this month " +
+                    "as one amount, so the total is right.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                FilledTonalButton(onClick = onAdd) { Text("Add what I've spent") }
+                Spacer(Modifier.width(8.dp))
+                TextButton(onClick = onDismiss) { Text("Not needed") }
+            }
+        }
+    }
+}
+
 /** Wraps the estimate so "loaded, but no balance entered" differs from "still loading". */
 private class BalanceState(val estimate: BalanceEstimate?)
 
@@ -360,6 +427,7 @@ private fun PaymentRow(payment: Payment, onClick: () -> Unit) {
     val source = when (payment.source) {
         PaymentStore.SOURCE_MANUAL -> "added by you"
         PaymentStore.SOURCE_BIT -> "bit"
+        PaymentStore.SOURCE_OPENING -> "before you set up the app"
         else -> "Google Wallet"
     }
     ListItem(
