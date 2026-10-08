@@ -85,13 +85,17 @@ class SpendingScreen(private val service: AccessibilityService) : SpendingDispla
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT,
         ).apply {
-            if (Build.VERSION.SDK_INT >= 30) fitInsetsTypes = 0
-            if (Build.VERSION.SDK_INT >= 28) {
+            // Cover the status bar too. With 3-button navigation, stop above the nav bar:
+            // this window sits above it and would otherwise swallow taps on back/home/recents.
+            if (Build.VERSION.SDK_INT >= 30) {
+                fitInsetsTypes = if (hasButtonNavigation()) WindowInsets.Type.navigationBars() else 0
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            } else if (Build.VERSION.SDK_INT >= 28) {
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
         }
-        // The window covers the status and navigation bars; keep the content clear of them.
-        val bars = systemBarInsets()
+        // Keep the content clear of whatever bars the window does cover.
+        val bars = coveredInsets()
         val side = dp(28f)
         v.findViewById<View>(R.id.screen_content)
             .setPadding(side + bars[0], dp(16f) + bars[1], side + bars[2], dp(24f) + bars[3])
@@ -140,14 +144,29 @@ class SpendingScreen(private val service: AccessibilityService) : SpendingDispla
         }
     }
 
-    /** Left, top, right and bottom space taken by the status bar, navigation bar and camera cutout. */
-    private fun systemBarInsets(): IntArray {
-        if (Build.VERSION.SDK_INT >= 30) {
-            val insets = windowManager.currentWindowMetrics.windowInsets
-                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
-            return intArrayOf(insets.left, insets.top, insets.right, insets.bottom)
-        }
-        return intArrayOf(0, dp(24f), 0, dp(48f))
+    /** True when the navigation bar has buttons (back/home/recents) rather than the gesture handle. */
+    private fun hasButtonNavigation(): Boolean {
+        if (Build.VERSION.SDK_INT < 30) return true
+        val tappable = windowManager.currentWindowMetrics.windowInsets
+            .getInsetsIgnoringVisibility(WindowInsets.Type.tappableElement())
+        // The status bar is a tappable element too, so only the bottom and sides tell.
+        return tappable.bottom > 0 || tappable.left > 0 || tappable.right > 0
+    }
+
+    /** Left, top, right and bottom space inside the window taken by system bars and the camera cutout. */
+    private fun coveredInsets(): IntArray {
+        if (Build.VERSION.SDK_INT < 30) return intArrayOf(0, dp(24f), 0, 0)
+        val insets = windowManager.currentWindowMetrics.windowInsets
+        val all = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+        if (!hasButtonNavigation()) return intArrayOf(all.left, all.top, all.right, all.bottom)
+        // The window ends where the button bar starts, so leave that part out.
+        val nav = insets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars())
+        return intArrayOf(
+            (all.left - nav.left).coerceAtLeast(0),
+            all.top,
+            (all.right - nav.right).coerceAtLeast(0),
+            (all.bottom - nav.bottom).coerceAtLeast(0),
+        )
     }
 
     private fun dp(value: Float): Int = (value * service.resources.displayMetrics.density).toInt()

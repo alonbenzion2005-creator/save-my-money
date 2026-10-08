@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.savemymoney.app.data.MonthSpending
@@ -255,7 +256,7 @@ private fun TotalCard(spending: MonthSpending, canPreview: Boolean) {
                 fontWeight = FontWeight.Bold,
             )
             if (spending.otherTotals.isNotEmpty()) {
-                Text(spending.otherTotalsLine, style = MaterialTheme.typography.bodyLarge)
+                Text(spending.otherTotalsLine, style = MaterialTheme.typography.bodyLarge.copy(textDirection = TextDirection.Ltr))
             }
             Text(spending.countLine, style = MaterialTheme.typography.bodyMedium)
             if (spending.hasBudget) {
@@ -266,7 +267,7 @@ private fun TotalCard(spending: MonthSpending, canPreview: Boolean) {
                     color = if (spending.overBudget) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 )
                 Spacer(Modifier.height(4.dp))
-                Text(spending.budgetLine, style = MaterialTheme.typography.bodyMedium)
+                Text(spending.budgetLine, style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Ltr))
             }
             if (canPreview && spending.isCurrentMonth) {
                 TextButton(

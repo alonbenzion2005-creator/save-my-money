@@ -32,6 +32,8 @@ class WalletWatcherService : AccessibilityService() {
     /** Don't leave the full screen up over the lock screen. */
     private val screenOff = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            // Opening Wallet again from the lock screen is a fresh open.
+            walletInFront = false
             screen?.hide(animate = false)
             banner?.hide(animate = false)
         }
@@ -68,7 +70,13 @@ class WalletWatcherService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val packageName = event.packageName?.toString() ?: return
-        val isWallet = WalletApps.isWalletWindow(packageName, event.className?.toString())
+        val className = event.className?.toString()
+        if (WalletApps.isTapToPayWindow(packageName, className)) {
+            // Paying by tapping the phone: get out of the way of the payment screen.
+            screen?.hide()
+            return
+        }
+        val isWallet = WalletApps.isWalletWindow(packageName, className)
         if (!isWallet && packageName in passingPackages) return
         if (isWallet && !walletInFront && Prefs(this).bannerEnabled) showSpending()
         // Left Wallet (home, recents, another app): don't leave the full screen behind.

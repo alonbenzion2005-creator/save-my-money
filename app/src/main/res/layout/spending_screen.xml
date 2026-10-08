@@ -48,6 +48,7 @@
             android:id="@+id/screen_others"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textDirection="ltr"
             android:textColor="@color/banner_text_secondary"
             android:textSize="18sp"
             android:visibility="gone" />
@@ -56,6 +57,7 @@
             android:id="@+id/screen_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textDirection="ltr"
             android:layout_marginTop="8dp"
             android:textColor="@color/banner_text_secondary"
             android:textSize="18sp" />
@@ -84,6 +86,7 @@
                 android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:textColor="@color/banner_text"
+                android:textDirection="ltr"
                 android:textSize="18sp" />
         </LinearLayout>
 

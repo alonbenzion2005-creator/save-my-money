@@ -28,6 +28,7 @@ class WalletNotificationListener : NotificationListenerService() {
         if (packageName != WalletApps.GOOGLE_WALLET && packageName != WalletApps.PLAY_SERVICES) return
         val notification = sbn.notification ?: return
         if (notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
+        if (!WalletApps.isPurchaseChannel(packageName, notification.channelId)) return
 
         val extras = notification.extras
         val title = (extras.getCharSequence(Notification.EXTRA_TITLE_BIG)
@@ -41,15 +42,7 @@ class WalletNotificationListener : NotificationListenerService() {
         ).mapNotNull { extras.getCharSequence(it)?.toString() } +
             extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES).orEmpty().map { it.toString() }
 
-        val fromWallet = packageName == WalletApps.GOOGLE_WALLET
-        val payment = PaymentParser.parse(
-            title,
-            texts,
-            requirePaymentWording = !fromWallet,
-            dollarCurrency = Currencies.dollarCurrency(this),
-        )
-        // Play services posts plenty of unrelated notifications; only keep the payment ones.
-        if (payment == null && !fromWallet) return
+        val payment = PaymentParser.parse(title, texts, dollarCurrency = Currencies.dollarCurrency(this))
 
         val store = PaymentStore.get(this)
         val result = when {

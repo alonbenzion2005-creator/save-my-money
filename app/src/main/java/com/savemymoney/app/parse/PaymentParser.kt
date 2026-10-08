@@ -24,17 +24,9 @@ object PaymentParser {
     /**
      * @param title the notification title (usually the merchant).
      * @param texts the other text fields of the notification.
-     * @param requirePaymentWording only accept notifications that also mention a
-     *   card or a word like "paid" — used for apps that post lots of unrelated
-     *   notifications.
      * @param dollarCurrency what a bare "$" means.
      */
-    fun parse(
-        title: String?,
-        texts: List<String?>,
-        requirePaymentWording: Boolean = false,
-        dollarCurrency: String = "USD",
-    ): ParsedPayment? {
+    fun parse(title: String?, texts: List<String?>, dollarCurrency: String = "USD"): ParsedPayment? {
         val rawLines = (listOf(title) + texts)
             .flatMap { it?.split('\n').orEmpty() }
             .map(::clean)
@@ -44,9 +36,6 @@ object PaymentParser {
         val lower = rawLines.joinToString("\n").lowercase(Locale.ROOT)
 
         if (IGNORE_WORDS.any { it in lower }) return null
-        if (requirePaymentWording && PAYMENT_WORDS.none { it in lower } && !CARD.containsMatchIn(lower)) {
-            return null
-        }
 
         // Card numbers ("Visa •••• 1234") would otherwise be read as amounts.
         val lines = rawLines.map { CARD.replace(it, " ").replace(SPACES, " ").trim() }
@@ -187,19 +176,16 @@ object PaymentParser {
     private val GENERIC = setOf(
         "google wallet", "google pay", "wallet", "payment", "payment complete", "payment completed",
         "payment successful", "payment sent", "payment approved", "purchase", "transaction", "paid",
-        "contactless payment", "new transaction", "תשלום", "התשלום בוצע", "תשלום בוצע", "ארנק google",
+        "contactless payment", "new transaction", "purchase complete", "unknown store", "unknown shop",
+        "תשלום", "התשלום בוצע", "תשלום בוצע", "ארנק google",
         "google ארנק", "עסקה חדשה",
     )
 
+    // Payments that didn't go through. (Promotions come on their own notification channel and
+    // are filtered out before this; words like "reward" also appear in card names.)
     private val IGNORE_WORDS = listOf(
         "declined", "failed", "unsuccessful", "not completed", "couldn't", "could not", "wasn't",
-        "cancelled", "canceled", "cashback", "cash back", "reward", "offer", "promo", "coupon",
-        "you received", "received from", "requested", "request from",
-        "נדחה", "נכשל", "לא הושלם", "לא בוצע", "בוטל", "הטבה", "קיבלת", "בקשת תשלום",
-    )
-    private val PAYMENT_WORDS = listOf(
-        "paid", "payment", "purchase", "spent", "charged", "transaction",
-        "שולם", "שילמת", "תשלום", "רכישה", "חיוב", "עסקה",
+        "cancelled", "canceled", "נדחה", "נדחתה", "נכשל", "נכשלה", "לא הושלם", "לא בוצע", "בוטל", "בוטלה",
     )
     private val REFUND_WORDS = listOf("refund", "reversal", "reversed", "returned", "זיכוי", "החזר", "הוחזר")
     private val BALANCE_WORDS = listOf("balance", "remaining", "יתרה", "נותרו")

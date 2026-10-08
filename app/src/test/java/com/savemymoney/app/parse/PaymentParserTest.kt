@@ -6,8 +6,8 @@ import org.junit.Test
 
 class PaymentParserTest {
 
-    private fun parse(title: String?, vararg texts: String?, strict: Boolean = false, dollar: String = "USD") =
-        PaymentParser.parse(title, texts.toList(), requirePaymentWording = strict, dollarCurrency = dollar)
+    private fun parse(title: String?, vararg texts: String?, dollar: String = "USD") =
+        PaymentParser.parse(title, texts.toList(), dollarCurrency = dollar)
 
     @Test
     fun merchantInTitleAmountInText() {
@@ -75,7 +75,6 @@ class PaymentParserTest {
         assertNull(parse("Payment declined", "$5.00 at Starbucks"))
         assertNull(parse("Boarding pass added", "Your pass for flight LY 001 is ready"))
         assertNull(parse("Visa •••• 1234 is ready to use", "Tap to pay in stores"))
-        assertNull(parse("Get $5 cashback", "On your next purchase"))
         assertNull(parse("Balance: $17.50", null))
     }
 
@@ -88,11 +87,38 @@ class PaymentParserTest {
         assertEquals(500L, parse("Cafe", "USA $5")?.amountCents)
     }
 
+    // Real Google Wallet notifications captured by other projects (title, text), 2025-2026.
     @Test
-    fun strictModeNeedsPaymentWording() {
-        assertNull(parse("Storage", "You have $10 of credit", strict = true))
-        assertEquals(450L, parse("Starbucks", "$4.50 with Visa •••• 1234", strict = true)?.amountCents)
-        assertEquals(450L, parse("Starbucks", "Paid $4.50", strict = true)?.amountCents)
+    fun realWalletNotifications() {
+        assertEquals(
+            ParsedPayment(1205, "GBP", "LONDON NORTH EASTERN RAILWAY"),
+            parse("LONDON NORTH EASTERN RAILWAY", "£12.05 with The American Express® Rewards Credit Card ••2002"),
+        )
+        assertEquals(
+            ParsedPayment(22900, "CZK", "131 - SUPER ZOO"),
+            parse("131 - SUPER ZOO", "229,00 CZK with Visa Debit Infinite ••2665"),
+        )
+        assertEquals(
+            ParsedPayment(80400, "HUF", "75. SZ. ABC ÁRUHÁZ"),
+            parse("75. SZ. ABC ÁRUHÁZ", "HUF804.00 with Revolut Mastercard ••1413"),
+        )
+        assertEquals(
+            ParsedPayment(240000, "CLP", "MERPAGO*MAXIMARKETLIM"),
+            parse("MERPAGO*MAXIMARKETLIM", "CLP2,400 con credito"),
+        )
+        assertEquals(
+            ParsedPayment(4099, "EUR", "SP HOLY ENERGY FR"),
+            parse("SP HOLY ENERGY FR", "40,99 € avec la carte Revolut Visa ••5239"),
+        )
+    }
+
+    // Google Play services' notification templates: "%1$s with %2$s", "DECLINED - %1$s with %2$s",
+    // "%1$s was refunded to %2$s", and "Unknown store" when there's no merchant name.
+    @Test
+    fun walletTemplates() {
+        assertNull(parse("Starbucks", "DECLINED - $5.00 with Visa ••1234"))
+        assertEquals(-12345L, parse("Amazon", "$123.45 was refunded to Amex ••1234")?.amountCents)
+        assertEquals(ParsedPayment(450, "USD", null), parse("Unknown store", "$4.50 with Visa ••1234"))
     }
 
     @Test

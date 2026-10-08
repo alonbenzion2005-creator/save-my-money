@@ -19,7 +19,9 @@ An Android app that shows **how much you've spent this month** full screen whene
 └────────────────────────────────┘
 ```
 
-The screen turns red when you're over budget. Tap **Continue to Wallet** or press back to go on to Wallet. You can also set it to close by itself after 5 or 10 seconds. If you prefer, Settings can switch it to a small banner at the top instead.
+The screen turns red when you're over budget. Tap **Continue to Wallet** or press back to go on to Wallet. By default it also closes by itself after 10 seconds. In Settings you can change that to 5 seconds, or have it stay until you tap Continue. Settings can also switch it to a small banner at the top instead.
+
+It never gets in the way of paying. When you tap your phone on a card reader, the full screen gets out of the way of Google's payment screen. Paying itself works even while the full screen is showing.
 
 ## How it works
 
@@ -41,7 +43,7 @@ The app also has its own screen. There you can browse months, see each payment, 
    - **Open Accessibility settings**, tap *Save My Money – Wallet spending* (under *Downloaded apps*), and turn it on.
 
    > **Switch greyed out / "Restricted setting"?** Android blocks these two switches for apps installed from a file until you allow it. Go to **Settings → Apps → Save My Money**, tap **⋮** (top right), choose **Allow restricted settings**, then go back and turn the switches on. The ⋮ option only appears after you've tried the switch once.
-4. Make sure Google Wallet's notifications are on: **Settings → Notifications → App notifications → Google Wallet**. Also check the notification settings inside the Wallet app.
+4. Make sure Google Wallet's purchase notifications are on. In the Wallet app, tap your profile picture → **Wallet settings** → **Notifications**. Also check **Settings → Notifications → App notifications → Google Wallet → Purchases**.
 5. Back in the app, tap **Preview what Wallet will show** to see it.
 
 Every push to this repo builds a fresh APK, and the link above always points to the newest one. Installing it again updates the app and keeps your data.
@@ -49,6 +51,7 @@ Every push to this repo builds a fresh APK, and the link above always points to 
 ## Good to know
 
 - **Only payments made after setup are counted automatically.** For anything earlier this month, or paid another way, use **Add**.
+- **Wallet's notification can take a minute or two to arrive** after you pay, and it needs internet. If the full screen is up when it arrives, the total updates straight away.
 - **Is a payment missing or wrong?** Tap the bell icon in the app. It lists every Wallet notification the app saw and what it did with each one. Tap a payment to edit or delete it.
 - **Several currencies** are totalled separately. The big number uses your main currency, which is the one you pay in most. You can change it in Settings.
 - Refunds that Wallet reports are subtracted. Declined payments, cashback offers and balance updates are ignored.

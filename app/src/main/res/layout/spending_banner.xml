@@ -34,6 +34,7 @@
             android:id="@+id/banner_others"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textDirection="ltr"
             android:textColor="@color/banner_text_secondary"
             android:textSize="14sp"
             android:visibility="gone" />
@@ -51,6 +52,7 @@
             android:id="@+id/banner_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textDirection="ltr"
             android:layout_marginTop="6dp"
             android:textColor="@color/banner_text_secondary"
             android:textSize="14sp" />
