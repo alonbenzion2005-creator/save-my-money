@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.ContextThemeWrapper
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowInsets
@@ -81,15 +82,26 @@ class SpendingScreen(private val service: AccessibilityService) : SpendingDispla
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            // Deliberately focusable (no FLAG_NOT_FOCUSABLE) so back comes to us, not Wallet.
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            // Focusable (no FLAG_NOT_FOCUSABLE) so back comes to us rather than Wallet, but not
+            // touch-modal, so taps outside the window still reach whatever is there.
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT,
         ).apply {
-            // Cover the status bar too. With 3-button navigation, stop above the nav bar:
-            // this window sits above it and would otherwise swallow taps on back/home/recents.
             if (Build.VERSION.SDK_INT >= 30) {
-                fitInsetsTypes = if (hasButtonNavigation()) WindowInsets.Type.navigationBars() else 0
+                // Cover everything, status bar included. This window sits above the system bars,
+                // so it doesn't get their insets and has to be sized by hand.
+                fitInsetsTypes = 0
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                if (hasButtonNavigation()) {
+                    // Stop at the back/home/recents buttons so they can still be tapped.
+                    val metrics = windowManager.currentWindowMetrics
+                    val nav = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars())
+                    gravity = Gravity.TOP or Gravity.LEFT
+                    x = nav.left
+                    y = 0
+                    width = metrics.bounds.width() - nav.left - nav.right
+                    height = metrics.bounds.height() - nav.bottom
+                }
             } else if (Build.VERSION.SDK_INT >= 28) {
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
