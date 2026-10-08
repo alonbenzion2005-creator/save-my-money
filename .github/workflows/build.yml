@@ -49,3 +49,7 @@ jobs:
             --latest \
             --title "Save My Money (latest build)" \
             --notes "Built from ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. On your phone, tap SaveMyMoney.apk below to download and install it."
+          # gh creates the release as a draft while uploading the APK and then publishes it;
+          # once that last step didn't happen, leaving the download link broken. Make sure.
+          gh release edit latest --draft=false --latest
+          test "$(gh release view latest --json isDraft --jq .isDraft)" = "false"
