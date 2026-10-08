@@ -26,6 +26,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /** Adds a payment by hand (cash, another card…) or fixes one the app read wrong. */
 @Composable
@@ -51,6 +52,11 @@ fun PaymentDialog(
     val cents = Money.parseInput(amount)
     val currencyOk = Currencies.isValid(currency)
     val dayNumber = day.toIntOrNull()?.takeIf { it in 1..targetMonth.lengthOfMonth() }
+    // The time matters for the bank balance: payments after the balance was typed are subtracted from it.
+    var timeText by remember {
+        mutableStateOf((initialTime?.toLocalTime() ?: LocalTime.now()).format(DateTimeFormatter.ofPattern("HH:mm")))
+    }
+    val clock = parseClock(timeText)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -89,15 +95,22 @@ fun PaymentDialog(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
+                OutlinedTextField(
+                    value = timeText,
+                    onValueChange = { timeText = it.filter { c -> c.isDigit() || c == ':' }.take(5) },
+                    label = { Text("Time, e.g. 14:30") },
+                    isError = clock == null,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
             }
         },
         confirmButton = {
             TextButton(
-                enabled = cents != null && cents != 0L && currencyOk && dayNumber != null,
+                enabled = cents != null && cents != 0L && currencyOk && dayNumber != null && clock != null,
                 onClick = {
-                    if (cents != null && dayNumber != null) {
-                        val time = initialTime?.toLocalTime() ?: LocalTime.now()
-                        val millis = targetMonth.atDay(dayNumber).atTime(time).atZone(zone).toInstant().toEpochMilli()
+                    if (cents != null && dayNumber != null && clock != null) {
+                        val millis = targetMonth.atDay(dayNumber).atTime(clock).atZone(zone).toInstant().toEpochMilli()
                         onSave(cents, currency, merchant.trim().ifEmpty { "Payment" }, millis)
                     }
                 },
@@ -114,4 +127,11 @@ fun PaymentDialog(
             }
         },
     )
+}
+
+/** "14:30", "9:05", or "1430" (the number keypad may have no colon). */
+private fun parseClock(text: String): LocalTime? {
+    val t = text.trim()
+    val withColon = if (':' !in t && t.length in 3..4) t.dropLast(2) + ":" + t.takeLast(2) else t
+    return runCatching { LocalTime.parse(withColon, DateTimeFormatter.ofPattern("H:mm")) }.getOrNull()
 }

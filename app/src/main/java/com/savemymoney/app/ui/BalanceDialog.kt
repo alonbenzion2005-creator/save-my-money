@@ -48,7 +48,11 @@ fun BalanceDialog(
                     value = amount,
                     onValueChange = { amount = it },
                     label = { Text("Balance") },
-                    supportingText = { Text("Put a minus sign in front if you're overdrawn") },
+                    supportingText = {
+                        // Show how the number was read, so "5,000" vs "5.000" can't silently go wrong.
+                        val saved = cents?.takeIf { currencyOk }?.let { "Will save " + Money.format(it, currency) }
+                        Text(saved ?: "Put a minus sign in front if you're overdrawn")
+                    },
                     isError = amount.isNotBlank() && cents == null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),

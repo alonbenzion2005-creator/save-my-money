@@ -41,11 +41,12 @@ data class BalanceEstimate(
             val zone = ZoneId.systemDefault()
             val time = Instant.ofEpochMilli(entered.timeMillis).atZone(zone)
             val today = LocalDate.now(zone)
-            val clock = time.format(DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault()))
+            // English, like the sentence it goes in; a Hebrew day name would reorder the line.
+            val clock = time.format(DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH))
             return when (time.toLocalDate()) {
                 today -> "today $clock"
                 today.minusDays(1) -> "yesterday $clock"
-                else -> time.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault()))
+                else -> time.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH))
             }
         }
 
